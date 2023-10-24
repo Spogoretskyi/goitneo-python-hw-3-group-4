@@ -38,25 +38,29 @@ class Phone(Field):
 
 
 class Birthday(Field):
-    def __init__(self, birthday):
-        super().__init__(birthday)
+    __date_format = "%d.%m.%Y"
 
-    def __hash__(self):
-        return hash(self.value)
-    
-    def __eq__(self, other):
-        return self.value == other.value
+    def __init__(self, birthday):
+        try:
+           value = datetime.datetime.strptime(birthday, self.__date_format)
+        except ValueError:
+            return "Incorrect data format, should be d.m.Y"
+        super().__init__(value)
+
+    def __str__(self):
+        return f"{self.value.strftime(self.__date_format)}"
 
 
 class Record:
     __phone_not_exists = "Phone does not exist in the list."
-    __date_format = "%d.%m.%Y"
-
+    
     def __init__(self, name, birthday = None):
         self.name = Name(name)
         self.phones = []
         if birthday != None:
-            self.__process_birthday(self, birthday)
+             self.birthday = Birthday(birthday)
+        else:
+            self.birthday = None
         
     def add_phone(self, phone):
         phn = Phone(phone)
@@ -87,24 +91,23 @@ class Record:
         return self.__phone_not_exists
     
     def add_birthday(self, birthday):
-        if self.birthday != None:
+        if self.birthday:
             return "Birthday was added previously."
-        self.__process_birthday(self, birthday)
+        self.birthday = Birthday(birthday)
+        return "Birthday was added."
 
     def show_birthday(self):
         return self.birthday
-        
-    def __process_birthday(self, birthday):
-        try:
-           self.birthday = Birthday(datetime.datetime.strptime(birthday, self.__date_format))
-        except ValueError:
-            return "Incorrect data format, should be DD.MM.YYYY"
 
     def __phone_exists(self, phone):
         return phone in self.phones
     
     def __str__(self):
-        return f"Contact name: {self.name.value}, phones: {'; '.join(p.value for p in self.phones)}, {'birthday:' + self.birthday.value: if self.birthday != None}"
+        brth = ""
+        if self.birthday != None:
+            brth += f", birthday: {self.birthday}."
+
+        return f"Contact name: {self.name.value}, phones: {'; '.join(p.value for p in self.phones)}{brth}"
 
 
 class AddressBook(UserDict):
@@ -144,27 +147,27 @@ class AddressBook(UserDict):
         
     def get_birthdays_per_week(self):
         birthdays_per_week = defaultdict(list)
-        current_year = datetime.today().year
-        current_date = datetime.today().date()
+        current_year = datetime.datetime.today().year
+        current_date = datetime.datetime.today().date()
 
         for value in self.data.values():
             if value.birthday != None:
                 name = value.name.value
                 birthday = value.birthday.value
-                birthday_this_year = birthday.replace(year = current_year)
+                birthday_this_year = (birthday.replace(year = current_year)).date()
 
-        if birthday_this_year < current_date:
-            birthday_this_year.replace(year = current_year + 1)
+            if birthday_this_year < current_date:
+                birthday_this_year.replace(year = current_year + 1)
 
-        delta_days = (birthday_this_year - current_date).days
-        if delta_days < 7 and delta_days > 0:
-            day = self.__get_day(value.birthday.value)
+            delta_days = (birthday_this_year - current_date).days
+            if delta_days < 7 and delta_days > 0:
+                day = AddressBook.__get_day(value.birthday.value)
 
-            if day in ("Saturday", "Sunday"):
-                day = "Monday"
+                if day in ("Saturday", "Sunday"):
+                    day = "Monday"
             
-            birthdays_per_week[day].append(name)
-        return birthdays_per_week
+                birthdays_per_week[day].append(name)
+        return birthdays_per_week 
 
     def __get_day(date):
         return date.strftime("%A")
@@ -174,3 +177,66 @@ class AddressBook(UserDict):
     
     def __str__(self):
          return "Address Book:\n" + '\n'.join([f'{value}' for value in self.data.values()])
+    
+
+
+
+  # Створення нової адресної книги
+book = AddressBook()
+
+    # Створення запису для John
+john_record = Record("John")
+john_record.add_phone("1234567890")
+john_record.add_phone("5555555555")
+
+# Додавання запису John до адресної книги
+book.add_record(john_record)
+
+# Створення та додавання нового запису для Jane
+jane_record = Record("Jane")
+jane_record.add_phone("9876543210")
+jane_record.add_birthday("8.11.1994")
+jane_record.add_birthday("8.11.1994")
+book.add_record(jane_record)
+jane_record.show_birthday()
+
+# Виведення всіх записів у книзі
+for name, record in book.data.items():
+    print(record)
+
+# Знаходження та редагування телефону для John
+john = book.find("John")
+john.edit_phone("1234567890", "1112223333")
+#john.add_birthday("1994-8-11")
+
+print(john)  # Виведення: Contact name: John, phones: 1112223333; 5555555555
+
+# Пошук конкретного телефону у записі John
+found_phone = john.find_phone("5555555555")
+print(f"{john.name}: {found_phone}")  # Виведення: 5555555555
+
+# Видалення запису Jane
+#book.delete("Jane")
+
+print(book)
+
+alex = Record("Alex")
+alex.add_phone("9994567890")
+book.add_record(alex)
+
+hanna = Record("Hanna")
+hanna.add_phone("1234567890")
+hanna.add_phone("5555555555")
+hanna.add_birthday("29.10.1992")
+book.add_record(hanna)
+
+jake = Record("Jake") 
+jake.add_phone("1155555511")
+book.add_record(jake)
+
+book.add_birthday("John", "30.10.1994")
+book.add_birthday("Alex", "02.11.1990")
+book.add_birthday("Jake", "31.03.1987")
+
+print(book)
+print(book.get_birthdays_per_week())
