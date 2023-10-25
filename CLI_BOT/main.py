@@ -1,13 +1,13 @@
-import CLI_BOT.Helpers
-import CLI_BOT.Models.models  
+from CLI_BOT.Helpers.cli_bot_helper import bot_helper as helper
+from CLI_BOT.Models.models import AddressBook  
 
 
 def main():
-    contacts = {}
+    addressBook = AddressBook()
     print("Welcome to the assistant bot!")
     while True:
         user_input = input("Enter a command: ")
-        command, *args = parse_input(user_input)
+        command, *args = helper.parse_input(user_input)
 
         if command.strip() in ["close", "exit"]:
             print("Good bye!")
@@ -15,16 +15,19 @@ def main():
         elif command == "hello":
             print("How can I help you?")
         elif command == "add":
-            print(add_contact(args, contacts))
+            print(helper.add_contact(args, addressBook))
         elif command == "change":
-            print(change_username_phone(args, contacts))
+            print(helper.change_phone(args, addressBook))
         elif command == "phone":
-            print(username_phone(args, contacts))
+            print(helper.get_phone(args, addressBook))
         elif command == "all":
-            text = ""
-            for k, v in contacts.items():
-                text += f"{k} {v}\n"
-            print(text)
+            print(helper.all(args, addressBook))
+        elif command == "add-birthday":
+            print(helper.add_birthday(args, addressBook))
+        elif command == "show-birthday":
+            print(helper.show_birthday(args, addressBook))
+        elif command == "birthdays":
+            print(helper.birthdays(args, addressBook))
         else:
             print("Invalid command.")
 

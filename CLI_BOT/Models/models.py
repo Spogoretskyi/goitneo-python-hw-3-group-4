@@ -35,7 +35,7 @@ class Phone(Field):
     
     def __eq__(self, other):
         return self.value == other.value
-
+    
 
 class Birthday(Field):
     __date_format = "%d.%m.%Y"
@@ -52,20 +52,15 @@ class Birthday(Field):
 
 
 class Record:
-    __phone_not_exists = "Phone does not exist in the list."
-    
-    def __init__(self, name, birthday = None):
+    def __init__(self, name):
         self.name = Name(name)
         self.phones = []
-        if birthday != None:
-             self.birthday = Birthday(birthday)
-        else:
-            self.birthday = None
+        self.birthday = None
         
     def add_phone(self, phone):
         phn = Phone(phone)
         if self.__phone_exists(phn):
-            return "Phone exists in the list."
+            raise IndexError
         self.phones.append(phn)
         return "Phone was added."
 
@@ -74,7 +69,7 @@ class Record:
         if self.__phone_exists(phn):
             self.phones.remove(phn)
             return "Phone was removed."
-        return self.__phone_not_exists
+        raise KeyError
 
     def edit_phone(self, phone, new_phone):
         phn = Phone(phone)
@@ -82,17 +77,17 @@ class Record:
             self.phones.remove(phn)
             self.phones.append(Phone(new_phone))
             return "Phone was edited."
-        return self.__phone_not_exists
+        raise KeyError
 
     def find_phone(self, phone):
         phn = Phone(phone)
         if self.__phone_exists(phn):
             return phn
-        return self.__phone_not_exists
+        raise KeyError
     
     def add_birthday(self, birthday):
         if self.birthday:
-            return "Birthday was added previously."
+            raise ValueError
         self.birthday = Birthday(birthday)
         return "Birthday was added."
 
@@ -111,39 +106,44 @@ class Record:
 
 
 class AddressBook(UserDict):
-    __name_not_exists = "Name not exists in the Address Book."
-    
     def add_record(self, data):
         if data in self.data.values():
-            return "Record has already exists in the Address Book."
+             raise ValueError
         self.data[data.name] = data
-        return "Record was added."
+        return "Contact was added."
 
     def find(self, name):
         nm = Name(name)
         if self.__has_key(nm):
             return self.data[nm]
-        return self.__name_not_exists
+        raise KeyError
+    
+    def edit_phone(self, name, new_phone):
+        nm = Name(name)
+        if self.__has_key(nm):
+            self.data[nm].edit_phone(self.data[nm].find_phone(nm), new_phone) 
+            return "Phone was changed."
+        raise KeyError
 
     def delete(self, name):
         nm = Name(name)
         if self.__has_key(nm):
             self.data.pop(nm)
             return "Record was removed."
-        return self.__name_not_exists
+        raise KeyError
     
     def add_birthday(self, name, birthday):
         nm = Name(name)
         if self.__has_key(nm):
             self.data[nm].add_birthday(birthday)
             return "Birthday was added."
-        return self.__name_not_exists
+        raise KeyError
     
     def show_birthday(self, name):
         nm = Name(name)
         if self.__has_key(nm):
             return self.data[nm].show_birthday()
-        return  self.__name_not_exists
+        raise KeyError
         
     def get_birthdays_per_week(self):
         birthdays_per_week = defaultdict(list)
