@@ -1,49 +1,52 @@
-from CLI_BOT.Decorators.input_error_decorator import input_error 
-from CLI_BOT.Models.models import AddressBook, Record  
+from Decorators.input_error_decorator import input_error 
+from Models.models import AddressBook, Record  
 
 
-class Bot_helper: 
-    def parse_input(user_input):
+class Bot_helper:
+    def __init__(self, addressBook : AddressBook):
+        self.addressBook = addressBook
+
+    def parse_input(self, user_input):
         cmd, *args = user_input.split()
         cmd = cmd.strip().lower()
         return cmd, *args
 
     @input_error
-    def add_contact(args, addressBook : AddressBook):
+    def add_contact(self, args):
         name, phone = args
         name = ''.join(name)
         record = Record(name)
         record.add_phone(phone)
-        return addressBook.add_record(record)
+        return self.addressBook.add_record(record)
 
     @input_error
-    def get_phone(args, addressBook : AddressBook):
+    def get_phone(self, args):
         name = args
         name = ''.join(name)
-        return addressBook.find(name)
+        return self.addressBook.find(name)
 
     @input_error
-    def change_phone(args, addressBook : AddressBook):
+    def change_phone(self, args):
         name, phone = args
         name = ''.join(name)
         phone = ''.join(phone)
-        return addressBook.edit_phone(name, phone)
+        return self.addressBook.edit_phone(name, phone)
         
     @input_error
-    def add_birthday(args, addressBook : AddressBook):
+    def add_birthday(self, args):
         name, birthday = args
         name = ''.join(name)
         birthday = ''.join(birthday)
-        return addressBook.add_birthday(name, birthday)
+        return self.addressBook.add_birthday(name, birthday)
 
     @input_error
-    def show_birthday(args, addressBook : AddressBook):
+    def show_birthday(self, args):
         name = args
         name = ''.join(name)
-        return addressBook.show_birthday(name)
+        return self.addressBook.show_birthday(name)
     
-    def all(addressBook : AddressBook):
-        return addressBook
+    def all(self):
+        return self.addressBook
 
-    def birthdays(addressBook : AddressBook):
-        return addressBook.get_birthdays_per_week()
+    def birthdays(self):
+        return self.addressBook.get_birthdays_per_week()

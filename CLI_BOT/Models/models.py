@@ -1,6 +1,7 @@
 import datetime
 import re
 from collections import UserDict, defaultdict
+from Exceptions.exceptions import DateException 
 
 
 class Field:
@@ -44,7 +45,7 @@ class Birthday(Field):
         try:
            value = datetime.datetime.strptime(birthday, self.__date_format)
         except ValueError:
-            return "Incorrect data format, should be d.m.Y"
+            raise DateException
         super().__init__(value)
 
     def __str__(self):
@@ -167,7 +168,10 @@ class AddressBook(UserDict):
                     day = "Monday"
             
                 birthdays_per_week[day].append(name)
-        return birthdays_per_week 
+        txt = ""
+        for k, v in birthdays_per_week.items():
+            txt += f"{k}: {'; '.join(n for n in v)}\n"        
+        return txt
 
     def __get_day(date):
         return date.strftime("%A")
