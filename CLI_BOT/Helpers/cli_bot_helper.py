@@ -67,3 +67,6 @@ class Bot_helper:
 
     def birthdays(self):
         return self.addressBook.get_birthdays_per_week()
+    
+    def exit(self):
+        self.addressBook.exit()

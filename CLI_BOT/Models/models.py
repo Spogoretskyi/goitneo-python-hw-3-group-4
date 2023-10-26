@@ -1,5 +1,7 @@
 import datetime
 import re
+import os
+import pickle
 from collections import UserDict, defaultdict
 from Exceptions.exceptions import DateError 
 
@@ -107,6 +109,14 @@ class Record:
 
 
 class AddressBook(UserDict):
+    __file_name = "data.bin"
+    __path = os.path.abspath(os.path.join(os.path.dirname(__file__), __file_name))
+
+    def __init__(self):
+        UserDict.__init__(self)
+        if os.path.isfile(self.__path):
+            self.data = self.__read_from_file()
+
     def add_record(self, data):
         if data in self.data.values():
              raise ValueError
@@ -185,12 +195,30 @@ class AddressBook(UserDict):
         for k, v in birthdays_per_week.items():
             txt += f"{k}: {'; '.join(n for n in v)}\n"        
         return txt
+    
+    def exit(self):
+        self.__save_to_file()
+
+    def __read_from_file(self):
+        with open(self.__path, "rb") as file:
+            data = pickle.load(file)
+        return data
+    
+    def __save_to_file(self):
+        with open(self.__path, "wb") as file:
+            pickle.dump(self.data, file)
 
     def __get_day(date):
         return date.strftime("%A")
 
     def __has_key(self, value):
         return value in self.data.keys()
+    
+    def __getstate__(self):
+        return self.data
+    
+    def __setstate__(self, value):
+        self.data = value
     
     def __str__(self):
          return "Address Book:\n" + '\n'.join([f'{value}' for value in self.data.values()])

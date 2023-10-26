@@ -10,6 +10,7 @@ def main():
         command, *args = helper.parse_input(user_input)
 
         if command.strip() in ["close", "exit"]:
+            helper.exit()
             print("Good bye!")
             break
         elif command == "hello":
