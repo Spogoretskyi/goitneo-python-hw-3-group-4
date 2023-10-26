@@ -15,11 +15,15 @@ def main():
         elif command == "hello":
             print("How can I help you?")
         elif command == "add":
-            print(helper.add_contact(args))
+            print(helper.add_contact_or_phone(args))
+        elif command == "remove":
+            print(helper.remove_contact(args))
         elif command == "change":
             print(helper.change_phone(args))
         elif command == "phone":
             print(helper.get_phone(args))
+        elif command == "remove-phone":
+            print(helper.remove_phone(args))
         elif command == "add-birthday":
             print(helper.add_birthday(args))
         elif command == "show-birthday":

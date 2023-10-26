@@ -1,7 +1,7 @@
 import datetime
 import re
 from collections import UserDict, defaultdict
-from Exceptions.exceptions import DateException 
+from Exceptions.exceptions import DateError 
 
 
 class Field:
@@ -45,7 +45,7 @@ class Birthday(Field):
         try:
            value = datetime.datetime.strptime(birthday, self.__date_format)
         except ValueError:
-            raise DateException
+            raise DateError("Incorrect date, should be format 'd.m.Y'")
         super().__init__(value)
 
     def __str__(self):
@@ -60,8 +60,8 @@ class Record:
         
     def add_phone(self, phone):
         phn = Phone(phone)
-        if self.__phone_exists(phn):
-            raise IndexError
+        if phn in self.phones:
+            raise ValueError
         self.phones.append(phn)
         return "Phone was added."
 
@@ -117,16 +117,30 @@ class AddressBook(UserDict):
         nm = Name(name)
         if self.__has_key(nm):
             return self.data[nm]
-        raise KeyError
+        return None
     
-    def edit_phone(self, name, new_phone):
+    def if_contact_exists(self, name):
+        return self.__has_key(Name(name))
+    
+    def add_phone(self, name, phone):
         nm = Name(name)
         if self.__has_key(nm):
-            self.data[nm].edit_phone(self.data[nm].find_phone(nm), new_phone) 
-            return "Phone was changed."
+            return self.data[nm].add_phone(phone)
         raise KeyError
 
-    def delete(self, name):
+    def edit_phone(self, name, phone, new_phone):
+        nm = Name(name)
+        if self.__has_key(nm):
+            return self.data[nm].edit_phone(phone, new_phone) 
+        raise KeyError
+    
+    def remove_phone(self, name, phone):
+        nm = Name(name)
+        if self.__has_key(nm):
+            return self.data[nm].remove_phone(phone)
+        raise KeyError
+
+    def remove(self, name):
         nm = Name(name)
         if self.__has_key(nm):
             self.data.pop(nm)
@@ -136,8 +150,7 @@ class AddressBook(UserDict):
     def add_birthday(self, name, birthday):
         nm = Name(name)
         if self.__has_key(nm):
-            self.data[nm].add_birthday(birthday)
-            return "Birthday was added."
+            return self.data[nm].add_birthday(birthday)
         raise KeyError
     
     def show_birthday(self, name):
@@ -157,17 +170,17 @@ class AddressBook(UserDict):
                 birthday = value.birthday.value
                 birthday_this_year = (birthday.replace(year = current_year)).date()
 
-            if birthday_this_year < current_date:
-                birthday_this_year.replace(year = current_year + 1)
+                if birthday_this_year < current_date:
+                    birthday_this_year.replace(year = current_year + 1)
 
-            delta_days = (birthday_this_year - current_date).days
-            if delta_days < 7 and delta_days > 0:
-                day = AddressBook.__get_day(value.birthday.value)
+                delta_days = (birthday_this_year - current_date).days
+                if delta_days < 7 and delta_days > 0:
+                    day = AddressBook.__get_day(value.birthday.value)
 
-                if day in ("Saturday", "Sunday"):
-                    day = "Monday"
-            
-                birthdays_per_week[day].append(name)
+                    if day in ("Saturday", "Sunday"):
+                        day = "Monday"
+                
+                    birthdays_per_week[day].append(name)
         txt = ""
         for k, v in birthdays_per_week.items():
             txt += f"{k}: {'; '.join(n for n in v)}\n"        

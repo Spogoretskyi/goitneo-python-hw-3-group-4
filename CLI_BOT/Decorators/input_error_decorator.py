@@ -1,4 +1,4 @@
-from Exceptions.exceptions import DateException  
+from Exceptions.exceptions import DateError  
 
 def input_error(func):
     def inner(*args, **kwargs):
@@ -7,12 +7,12 @@ def input_error(func):
         except ValueError:
             return "Give me name and phone please."
         except KeyError:
-            return "Enter user name please."
+            return "Enter correct argumnt/s please."
         except IndexError:
             return "Give me name and phone please."
-        except DateException:
-            return "Incorrect date, should be format 'd.m.Y'"
+        except DateError as e:
+            return f"{e}"
         except Exception as e:
-            return f"An unexpected error occurred: {str(e)}"
+            return f"An unexpected error occurred: {e}"
 
     return inner

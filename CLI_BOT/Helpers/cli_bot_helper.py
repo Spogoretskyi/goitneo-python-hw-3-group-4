@@ -12,12 +12,21 @@ class Bot_helper:
         return cmd, *args
 
     @input_error
-    def add_contact(self, args):
+    def add_contact_or_phone(self, args):
         name, phone = args
         name = ''.join(name)
+        phone = ''.join(phone)
+        if self.addressBook.if_contact_exists(name):
+            return self.addressBook.add_phone(name, phone)
         record = Record(name)
         record.add_phone(phone)
         return self.addressBook.add_record(record)
+    
+    @input_error
+    def remove_contact(self, args):
+        name = args
+        name = ''.join(name)
+        return self.addressBook.remove(name)
 
     @input_error
     def get_phone(self, args):
@@ -27,10 +36,18 @@ class Bot_helper:
 
     @input_error
     def change_phone(self, args):
+        name, phone, new_phone = args
+        name = ''.join(name)
+        phone = ''.join(phone)
+        new_phone = ''.join(new_phone)
+        return self.addressBook.edit_phone(name, phone, new_phone)
+    
+    @input_error
+    def remove_phone(self, args):
         name, phone = args
         name = ''.join(name)
         phone = ''.join(phone)
-        return self.addressBook.edit_phone(name, phone)
+        return self.addressBook.remove_phone(name, phone)
         
     @input_error
     def add_birthday(self, args):
